@@ -1,0 +1,171 @@
+<html>
+<head>
+	<title> therapeutic multishining </title>
+	<style>
+	body {
+		background-color: rgb(4, 6, 1);
+	}
+	#spacie {
+		user-select: none;
+	}
+	#spacie_container {
+		height: 100%;
+		width: 100%;
+		background-color: rgb(4, 6, 1);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	
+	</style>
+</head>
+
+<body>
+	<div id="spacie_container">
+		<img id="spacie" src="fox2.gif" />
+	</div>
+	
+	<script src="cookies.js"></script>
+	<script>
+		Sound = function(source, def_vol) {
+			this.audio = document.createElement("audio");
+			this.audio.src = source;
+			this.audio.controls = "none";
+			this.audio.display = "none";
+			this.audio.volume = def_vol;
+			this.play = function() { this.audio.play(); }
+			return this;
+		}
+	
+		
+		var shine = new Sound("shine.wav", .2);
+		var crowd_1 = new Sound("crowd_cheer_weak.wav", .4);
+		var crowd_2 = new Sound("crowd_cheer_med.wav", .6);
+		var crowd_3 = new Sound("crowd_cheer_heavy.wav", 1);
+		var a_nr = new Sound("a_new_record.wav", .8);
+		var a_wi = new Sound("a_wow_incredible.wav", .6);
+		var a_cn = new Sound("a_congratulations.wav", .4);
+		
+		var spacie = document.getElementById("spacie");
+		// width: 236
+		// height: 198
+		var cwidth = 236;
+		var cheight = 198;
+		
+		playShine = function() {
+			let clone = shine.audio.cloneNode();
+			clone.volume = cv / 100;
+			//console.log("using volume: " + clone.volume);
+			clone.play();
+			spacie.src = "fox2.gif" + "?" + Math.random();
+		}
+		
+		var cv = 20;
+		var chaining = false;
+		var chain_interval;
+		var chain_timer;
+		var chain_count = 0;
+		const chain_window = 25;
+		
+		startChain = function() {
+			chaining = true;
+			chain_timer = chain_window;
+			chain_interval = setInterval(function() {
+				chain_timer--;
+				if (chain_timer == 0) {
+					if (chain_count > 20) {
+						if (chain_count > getRecord()) {
+							setRecord(chain_count);
+							a_nr.play();
+						}
+						else if (chain_count > 50) a_cn.play();
+						else if (chain_count > 100) a_wi.play();
+						alert(chain_count + ", nice\nbest: " + getRecord());
+					}
+					chaining = false;
+					chain_count = 0;
+					cv = 20;
+					cwidth = 236;
+					cheight = 198;
+					updateSize();
+					clearInterval(chain_interval);
+				}
+			}, 10);
+		}
+		
+		increaseChain = function() {
+			chain_timer = chain_window;
+			chain_count++;
+			cwidth = cwidth * 1.02;
+			cheight = cheight * 1.02;
+			updateSize();
+			if (cv < 100) cv++;
+			
+			switch (chain_count) {
+				case 20:
+					crowd_1.play();
+					break;
+				case 50:
+					crowd_2.play();
+					break;
+				case 100:
+					crowd_3.play();
+					break;
+				default:
+					break;
+			}
+		}
+		
+		updateSize = function() {
+			spacie.style.width = cwidth;
+			spacie.style.height = cheight;
+		}
+		
+		getRecord = function() {
+			var record;
+			var string_record = getCookie("record");
+			if (string_record == "") return 0;
+			else return parseInt(string_record);
+		}
+		
+		setRecord = function(record) { setCookie("record", record); }
+		
+		debugResetRecord = function() { clearCookie("record"); }
+		
+		const fade_duration = 150;
+		const fade_delay = 50;
+		fadeEntrance = function() {
+			let fade_timer = 0;
+			let copacity = .01;
+			spacie.style.opacity = copacity;
+			let fade_interval = setInterval( function() {
+				fade_timer++;
+				if (fade_timer > fade_delay) {
+					copacity = (fade_timer - fade_delay) / fade_duration;
+					spacie.style.opacity = copacity;
+				}
+				if (fade_timer == fade_duration + fade_delay) {
+					spacie.style.opacity = 1;
+					clearInterval(fade_interval);
+				}
+			}, 10);
+		}
+		
+		document.getElementById("spacie").addEventListener("click", function(e) {
+			if (!chaining) startChain();
+			increaseChain();
+			playShine();
+			e.stopPropagation();
+		});
+		
+		document.getElementById("spacie_container").addEventListener("click", function(e) {
+			cv = 20;
+			playShine();
+			e.stopPropagation();
+		});
+		
+		fadeEntrance();
+		
+	</script>
+</body>
+</html>
